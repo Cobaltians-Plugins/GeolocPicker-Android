@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GeolocPicker</string>
+    <string name="menu_ok">OK</string>
+    <string name="map_title">Lieu</string>
+    <string name="map_instruction">Faites un appui long pour choisir un lieu.</string>
+    <string name="unknown_address">Adresse inconnue</string>
+</resources>

@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.kristal.geolocpicker" >
+
+    <application>
+
+    <meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="AIzaSyDHUHLXXgKCTaiuxlqgAw6622dodnUNp3c" />
+
+    <activity android:name=".MapActivity"
+        android:theme="@style/MapTheme" />
+
+    </application>
+
+</manifest>
