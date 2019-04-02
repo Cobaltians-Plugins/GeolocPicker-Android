@@ -8,7 +8,8 @@
     android:value="AIzaSyDHUHLXXgKCTaiuxlqgAw6622dodnUNp3c" />
 
     <activity android:name=".MapActivity"
-        android:theme="@style/MapTheme" />
+        android:theme="@style/MapTheme"
+        android:screenOrientation="portrait" />
 
     </application>
 

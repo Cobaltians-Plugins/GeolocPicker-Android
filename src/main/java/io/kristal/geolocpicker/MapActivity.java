@@ -70,8 +70,7 @@ public final class MapActivity extends AppCompatActivity implements OnMapReadyCa
         mAddress = getIntent().getStringExtra(EXTRA_ADDRESS);
 
         Fragment mapFragment = getSupportFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null
-                && mapFragment instanceof SupportMapFragment) {
+        if (mapFragment != null && mapFragment instanceof SupportMapFragment) {
             ((SupportMapFragment) mapFragment).getMapAsync(this);
         }
         else {
@@ -196,7 +195,6 @@ public final class MapActivity extends AppCompatActivity implements OnMapReadyCa
         if(mPinCoordinates == null){
             //Hide address
             //Display instructions
-            // TODO Check (API 21 for CardView)
             instructions.setAlpha(0f);
             instructions.setVisibility(View.VISIBLE);
             instructions.animate()
