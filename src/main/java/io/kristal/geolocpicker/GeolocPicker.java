@@ -13,6 +13,8 @@ import org.cobaltians.cobalt.plugin.CobaltPluginWebContainer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Random;
+
 import io.kristal.geolocpicker.utils.FormsUtils;
 
 public class GeolocPicker extends CobaltAbstractPlugin {
@@ -21,8 +23,8 @@ public class GeolocPicker extends CobaltAbstractPlugin {
 
     private CobaltFragment fragment;
     private Context context;
-    private String mSelectLocationCallback;
     private int mSelectLocationRequest;
+    private String mPluginName;
 
     /*******************************************************************************************************
      * MEMBERS
@@ -48,13 +50,14 @@ public class GeolocPicker extends CobaltAbstractPlugin {
             context = webContainer.getActivity();
             String action = message.getString(Cobalt.kJSAction);
             JSONObject data = message.getJSONObject(Cobalt.kJSData);
-            mSelectLocationCallback = message.getString(Cobalt.kJSCallback);
-            mSelectLocationRequest = mSelectLocationCallback.hashCode();
+            mPluginName = message.getString(Cobalt.kJSPluginName);
             Intent intent = new Intent(context, MapActivity.class);
 
             if ("selectLocation".equals(action)) {
                 if (data != null) {
                     String location = data.optString("location");
+
+                    mSelectLocationRequest = new Random().nextInt(254);
                     if (location != null) {
                         LatLng coordinates = FormsUtils.parseCoordinates(location);
                         if (coordinates != null) {
@@ -90,18 +93,18 @@ public class GeolocPicker extends CobaltAbstractPlugin {
             if (data != null) {
                 LatLng coordinates = data.getParcelableExtra(MapActivity.EXTRA_COORDINATES);
                 String address = data.getStringExtra(MapActivity.EXTRA_ADDRESS);
-                if (coordinates != null) {
-                    try {
+                try {
+                    if (coordinates != null) {
+                            JSONObject callbackData = new JSONObject();
+                            callbackData.put("location", coordinates.latitude + "," + coordinates.longitude);
+                            callbackData.put("address", address);
+                            fragment.sendPlugin(mPluginName, callbackData);
+                        } else {
                         JSONObject callbackData = new JSONObject();
-                        callbackData.put("location", coordinates.latitude + "," + coordinates.longitude);
-                        callbackData.put("address", address);
-                        fragment.sendCallback(mSelectLocationCallback, callbackData);
-                    } catch (JSONException exception) {
-                        exception.printStackTrace();
+                        fragment.sendPlugin(mPluginName, callbackData);
                     }
-                } else {
-                    JSONObject callbackData = new JSONObject();
-                    fragment.sendCallback(mSelectLocationCallback, callbackData);
+                } catch (JSONException exception) {
+                    exception.printStackTrace();
                 }
             }
         }
