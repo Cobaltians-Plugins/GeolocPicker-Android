@@ -22,8 +22,8 @@ android {
 }
 
 dependencies {
-    implementation "com.google.android.gms:play-services-maps:16.1.0"
-    implementation "com.android.support:cardview-v7:$project.ext.androidSupportVersion"
+    implementation "com.google.android.gms:play-services-maps:15.0.0"
+    implementation "com.android.support:cardview-v7:$project.ext.buildToolsVersion"
     api project(':permissions')
     implementation project(':cobalt')
 }
