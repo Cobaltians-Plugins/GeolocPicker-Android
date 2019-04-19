@@ -2,6 +2,8 @@ package io.kristal.geolocpicker;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -24,7 +26,6 @@ public class GeolocPicker extends CobaltAbstractPlugin {
     private CobaltFragment fragment;
     private Context context;
     private int mSelectLocationRequest;
-    private String mPluginName;
 
     /*******************************************************************************************************
      * MEMBERS
@@ -36,55 +37,44 @@ public class GeolocPicker extends CobaltAbstractPlugin {
      * CONSTRUCTORS
      **************************************************************************************/
 
-    public static CobaltAbstractPlugin getInstance(CobaltPluginWebContainer webContainer) {
-        if (sInstance == null) {
+    public static GeolocPicker getInstance()
+    {
+        if (sInstance == null)
+        {
             sInstance = new GeolocPicker();
         }
         return sInstance;
     }
-
+    
     @Override
-    public void onMessage(CobaltPluginWebContainer webContainer, JSONObject message) {
-        try {
-            fragment = webContainer.getFragment();
-            context = webContainer.getActivity();
-            String action = message.getString(Cobalt.kJSAction);
-            JSONObject data = message.getJSONObject(Cobalt.kJSData);
-            mPluginName = message.getString(Cobalt.kJSPluginName);
-            Intent intent = new Intent(context, MapActivity.class);
+    public void onMessage(@NonNull CobaltPluginWebContainer webContainer, @NonNull String action,
+            @Nullable JSONObject data, @Nullable String callbackChannel)
+    {
+        // TODO: check nullability for webContainer.getFragment/getActivity
+        fragment = webContainer.getFragment();
+        context = webContainer.getActivity();
+        Intent intent = new Intent(context, MapActivity.class);
 
-            if ("selectLocation".equals(action)) {
-                if (data != null) {
-                    String location = data.optString("location");
+        if ("selectLocation".equals(action)) {
+            if (data != null) {
+                String location = data.optString("location");
 
-                    mSelectLocationRequest = new Random().nextInt(254);
-                    if (location != null) {
-                        LatLng coordinates = FormsUtils.parseCoordinates(location);
-                        if (coordinates != null) {
-                            intent.putExtra(MapActivity.EXTRA_COORDINATES, coordinates);
-                        }
-                    }
-                    String address = data.optString("address");
-                    if (address != null) {
-                        intent.putExtra(MapActivity.EXTRA_ADDRESS, address);
+                mSelectLocationRequest = new Random().nextInt(254);
+                if (location != null) {
+                    LatLng coordinates = FormsUtils.parseCoordinates(location);
+                    if (coordinates != null) {
+                        intent.putExtra(MapActivity.EXTRA_COORDINATES, coordinates);
                     }
                 }
-                fragment.startActivityForResult(intent, mSelectLocationRequest);
+                String address = data.optString("address");
+                if (address != null) {
+                    intent.putExtra(MapActivity.EXTRA_ADDRESS, address);
+                }
             }
-            else if (Cobalt.DEBUG) {
-                Log.w(TAG, "onMessage: action '" + action + "' not recognized");
-            }
-
+            fragment.startActivityForResult(intent, mSelectLocationRequest);
         }
-        catch(JSONException exception) {
-            if (Cobalt.DEBUG) {
-                Log.e(TAG, "onMessage: wrong format, possible issues: \n" +
-                        "\t- missing 'action' field or not a string,\n" +
-                        "\t- missing 'data' field or not a object,\n" +
-                        "\t- missing 'data.actions' field or not an array,\n" +
-                        "\t- missing 'callback' field or not a string.\n");
-            }
-            exception.printStackTrace();
+        else if (Cobalt.DEBUG) {
+            Log.w(TAG, "onMessage: action '" + action + "' not recognized");
         }
     }
 
@@ -98,10 +88,12 @@ public class GeolocPicker extends CobaltAbstractPlugin {
                             JSONObject callbackData = new JSONObject();
                             callbackData.put("location", coordinates.latitude + "," + coordinates.longitude);
                             callbackData.put("address", address);
-                            fragment.sendPlugin(mPluginName, callbackData);
+                            // TODO: use PubSub on callbackChannel
+                            //fragment.sendPlugin(mPluginName, callbackData);
                         } else {
                         JSONObject callbackData = new JSONObject();
-                        fragment.sendPlugin(mPluginName, callbackData);
+                        // TODO: use PubSub on callbackChannel
+                        //fragment.sendPlugin(mPluginName, callbackData);
                     }
                 } catch (JSONException exception) {
                     exception.printStackTrace();
@@ -109,5 +101,4 @@ public class GeolocPicker extends CobaltAbstractPlugin {
             }
         }
     }
-
 }
