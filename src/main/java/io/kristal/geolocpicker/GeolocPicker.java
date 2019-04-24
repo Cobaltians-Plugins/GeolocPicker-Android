@@ -26,6 +26,7 @@ public class GeolocPicker extends CobaltAbstractPlugin {
     private CobaltFragment fragment;
     private Context context;
     private int mSelectLocationRequest;
+    private String callback;
 
     /*******************************************************************************************************
      * MEMBERS
@@ -50,31 +51,40 @@ public class GeolocPicker extends CobaltAbstractPlugin {
     public void onMessage(@NonNull CobaltPluginWebContainer webContainer, @NonNull String action,
             @Nullable JSONObject data, @Nullable String callbackChannel)
     {
-        // TODO: check nullability for webContainer.getFragment/getActivity
-        fragment = webContainer.getFragment();
-        context = webContainer.getActivity();
-        Intent intent = new Intent(context, MapActivity.class);
+        if (webContainer.getFragment() != null){
+            if(webContainer.getActivity() !=null) {
+                fragment = webContainer.getFragment();
+                context = webContainer.getActivity();
+                callback = callbackChannel;
+                Intent intent = new Intent(context, MapActivity.class);
 
-        if ("selectLocation".equals(action)) {
-            if (data != null) {
-                String location = data.optString("location");
+                if ("selectLocation".equals(action)) {
+                    if (data != null) {
+                        String location = data.optString("location");
 
-                mSelectLocationRequest = new Random().nextInt(254);
-                if (location != null) {
-                    LatLng coordinates = FormsUtils.parseCoordinates(location);
-                    if (coordinates != null) {
-                        intent.putExtra(MapActivity.EXTRA_COORDINATES, coordinates);
+                        mSelectLocationRequest = new Random().nextInt(254);
+                        if (location != null) {
+                            LatLng coordinates = FormsUtils.parseCoordinates(location);
+                            if (coordinates != null) {
+                                intent.putExtra(MapActivity.EXTRA_COORDINATES, coordinates);
+                            }
+                        }
+                        String address = data.optString("address");
+                        if (address != null) {
+                            intent.putExtra(MapActivity.EXTRA_ADDRESS, address);
+                        }
                     }
-                }
-                String address = data.optString("address");
-                if (address != null) {
-                    intent.putExtra(MapActivity.EXTRA_ADDRESS, address);
+                    fragment.startActivityForResult(intent, mSelectLocationRequest);
+                } else if (Cobalt.DEBUG) {
+                    Log.w(TAG, "onMessage: action '" + action + "' not recognized");
                 }
             }
-            fragment.startActivityForResult(intent, mSelectLocationRequest);
+            else {
+                Log.e(TAG, "webContainer activity is null");
+            }
         }
-        else if (Cobalt.DEBUG) {
-            Log.w(TAG, "onMessage: action '" + action + "' not recognized");
+        else {
+            Log.e(TAG, "webContainer fragment is null");
         }
     }
 
@@ -88,12 +98,10 @@ public class GeolocPicker extends CobaltAbstractPlugin {
                             JSONObject callbackData = new JSONObject();
                             callbackData.put("location", coordinates.latitude + "," + coordinates.longitude);
                             callbackData.put("address", address);
-                            // TODO: use PubSub on callbackChannel
-                            //fragment.sendPlugin(mPluginName, callbackData);
+                            Cobalt.publishMessage(callbackData, callback);
                         } else {
                         JSONObject callbackData = new JSONObject();
-                        // TODO: use PubSub on callbackChannel
-                        //fragment.sendPlugin(mPluginName, callbackData);
+                        Cobalt.publishMessage(callbackData, callback);
                     }
                 } catch (JSONException exception) {
                     exception.printStackTrace();
